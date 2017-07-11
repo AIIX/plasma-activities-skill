@@ -73,8 +73,30 @@ class ActivitiesPlasmaDesktopSkill(MycroftSkill):
         self.speak_dialog("activities.stop", data={'StopActivityName': searchString})    
         
     def handle_activities_switch_plasma_skill_intent(self, message):
-        searchString = "Not Implemented WIP"
-        self.speak_dialog("activities.switch", data={'SwitchActivityName': searchString})     
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(
+                message.data.get('ActivitiesSwitchKeyword'), '')
+        searchString = utterance.lower()
+        speakword = searchString.replace(" ", "")
+        actinfo = []
+        bus = dbus.SessionBus()
+        remote_object = bus.get_object("org.kde.ActivityManager","/ActivityManager/Activities") 
+        callback = remote_object.ListActivitiesWithInformation(dbus_interface = "org.kde.ActivityManager.Activities") 
+        self.speak_dialog("activities.switch", data={'SwitchActivityName': speakword})
+        for i in range(len(callback)):
+            temp_callback = map(str, callback[i])
+            actinfo.append(temp_callback)
+            actenum = actinfo[i][1]
+            actgetid = actenum.lower()
+            if(actgetid == speakword): 
+                actid = actinfo[i][0]
+                self.switchtoactivity(actid)
+            
+    def switchtoactivity(self, activitieslist):
+        activityaddr = activitieslist;
+        bus = dbus.SessionBus()
+        remote_object = bus.get_object("org.kde.ActivityManager","/ActivityManager/Activities")
+        remote_object.SetCurrentActivity(activityaddr, dbus_interface = "org.kde.ActivityManager.Activities")    
         
     def stop(self):
         pass
