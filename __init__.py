@@ -1,110 +1,160 @@
+"""
+Plasma Activities Mycroft Skill. 
+"""
+
 import sys
 import dbus
-import glib
+import re
 from traceback import print_exc
 from os.path import dirname
 from adapt.intent import IntentBuilder
-from mycroft.skills.core import MycroftSkill
+from mycroft.skills.core import MycroftSkill, intent_handler
 from mycroft.util.log import getLogger
 
 __author__ = 'aix'
-catchInput = " "
 
 LOGGER = getLogger(__name__)
 
 
 class ActivitiesPlasmaDesktopSkill(MycroftSkill):
-
-    # The constructor of the skill, which calls MycroftSkill's constructor
+    """
+    Activities Skill Class.
+    """
 
     def __init__(self):
+        """
+        Initialization
+        """
         super(
             ActivitiesPlasmaDesktopSkill,
             self).__init__(
                 name="ActivitiesPlasmaDesktopSkill")
 
-    # This method loads the files needed for the skill's functioning, and
-    # creates and registers each intent that the skill uses
-    def initialize(self):
-        self.load_data_files(dirname(__file__))
-
-        activities_create_plasma_skill_intent = IntentBuilder("ActivitiesKeywordIntent").\
-            require("ActivitiesCreateKeyword").build()
-        self.register_intent(
-            activities_create_plasma_skill_intent,
-            self.handle_activities_create_plasma_skill_intent)
-
-        activities_show_plasma_skill_intent = IntentBuilder("ShowActivitiesIntent").\
-            require("ActivitiesShowKeyword").build()
-        self.register_intent(
-            activities_show_plasma_skill_intent,
-            self.handle_activities_show_plasma_skill_intent)
-
-        activities_remove_plasma_skill_intent = IntentBuilder("RemoveActivitiesIntent").\
-            require("ActivitiesRemoveKeyword").build()
-        self.register_intent(
-            activities_remove_plasma_skill_intent,
-            self.handle_activities_remove_plasma_skill_intent)
-
-        activities_stop_plasma_skill_intent = IntentBuilder("StopActivitiesIntent").\
-            require("ActivitiesStopKeyword").build()
-        self.register_intent(
-            activities_stop_plasma_skill_intent,
-            self.handle_activities_stop_plasma_skill_intent)
-
-        activities_switch_plasma_skill_intent = IntentBuilder("SwitchActivitiesIntent").\
-            require("ActivitiesSwitchKeyword").build()
-        self.register_intent(
-            activities_switch_plasma_skill_intent,
-            self.handle_activities_switch_plasma_skill_intent)
-
+    @intent_handler(IntentBuilder("ActivitiesKeywordIntent").require("ActivitiesCreateKeyword").build())
     def handle_activities_create_plasma_skill_intent(self, message):
+        """
+        Create Activities
+        """
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(
             message.data.get('ActivitiesCreateKeyword'), '')
         searchString = utterance
+        speakword = searchString.lstrip(' ')
 
         bus = dbus.SessionBus()
         remote_object = bus.get_object(
             "org.kde.ActivityManager",
             "/ActivityManager/Activities")
         remote_object.AddActivity(
-            searchString,
+            speakword,
             dbus_interface="org.kde.ActivityManager.Activities")
         remote_object2 = bus.get_object("org.kde.plasmashell", "/PlasmaShell")
         remote_object2.toggleActivityManager(
             dbus_interface="org.kde.PlasmaShell")
+        speakdlg = "New Activity {0} Has Been Created".format(speakword)
+        self.speak(speakdlg)
 
-        self.speak_dialog(
-            "activities.create",
-            data={'CreateActivityName': searchString})
-
+    @intent_handler(IntentBuilder("ShowActivitiesIntent").require("ActivitiesShowKeyword").build())
     def handle_activities_show_plasma_skill_intent(self, message):
+        """
+        Show Activities
+        """
         bus = dbus.SessionBus()
         remote_object2 = bus.get_object("org.kde.plasmashell", "/PlasmaShell")
-        remote_object2.toggleActivityManager(
-            dbus_interface="org.kde.PlasmaShell")
+        remote_object2.toggleActivityManager(dbus_interface="org.kde.PlasmaShell")
 
-        self.speak_dialog("activities.show")
-
+    @intent_handler(IntentBuilder("RemoveActivitiesIntent").require("ActivitiesRemoveKeyword").build())
     def handle_activities_remove_plasma_skill_intent(self, message):
-        searchString = "Not Implemented WIP"
-        self.speak_dialog(
-            "activities.remove",
-            data={'RemoveActivityName': searchString})
+        """
+        Remove Activities
+        """
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(
+            message.data.get('ActivitiesRemoveKeyword'), '')
+        searchString = utterance.lower()
+        speakword = searchString.lstrip(' ')
+        actinfo = []
+        bus = dbus.SessionBus()
+        remote_object = bus.get_object(
+            "org.kde.ActivityManager",
+            "/ActivityManager/Activities")
+        callback = remote_object.ListActivitiesWithInformation(
+            dbus_interface="org.kde.ActivityManager.Activities")
+        spkdlg = "Activity {0} has been removed".format(speakword)
+        self.speak(spkdlg)
+        for i in range(len(callback)):
+            temp_callback = list(map(str, callback[i]))
+            actinfo.append(temp_callback)
+            actenum = actinfo[i][1]
+            actgetid = actenum.lower()
+            if(actgetid == speakword):
+                actid = actinfo[i][0]
+                self.removeactivity(actid)
 
+    def removeactivity(self, activitieslist):
+        """
+        Remove Activities SubFunc
+        """
+        activityaddr = activitieslist
+        bus = dbus.SessionBus()
+        remote_object = bus.get_object(
+            "org.kde.ActivityManager",
+            "/ActivityManager/Activities")
+        remote_object.RemoveActivity(
+            activityaddr,
+            dbus_interface="org.kde.ActivityManager.Activities")
+
+    @intent_handler(IntentBuilder("StopActivitiesIntent").require("ActivitiesStopKeyword").build())
     def handle_activities_stop_plasma_skill_intent(self, message):
-        searchString = "Not Implemented WIP"
-        self.speak_dialog(
-            "activities.stop",
-            data={'StopActivityName': searchString})
+        """
+        Stop Activities
+        """
+        utterance = message.data.get('utterance').lower()
+        utterance = utterance.replace(
+            message.data.get('ActivitiesStopKeyword'), '')
+        searchString = utterance.lower()
+        speakword = searchString.lstrip(' ')
+        actinfo = []
+        bus = dbus.SessionBus()
+        remote_object = bus.get_object(
+            "org.kde.ActivityManager",
+            "/ActivityManager/Activities")
+        callback = remote_object.ListActivitiesWithInformation(
+            dbus_interface="org.kde.ActivityManager.Activities")
+        spkdlg = "Activity {0} has been stopped".format(speakword)
+        self.speak(spkdlg)
+        for i in range(len(callback)):
+            temp_callback = list(map(str, callback[i]))
+            actinfo.append(temp_callback)
+            actenum = actinfo[i][1]
+            actgetid = actenum.lower()
+            if(actgetid == speakword):
+                actid = actinfo[i][0]
+                self.stopactivity(actid)
+                
+    def stopactivity(self, activitieslist):
+        """
+        Stop Activities SubFunc
+        """
+        activityaddr = activitieslist
+        bus = dbus.SessionBus()
+        remote_object = bus.get_object(
+            "org.kde.ActivityManager",
+            "/ActivityManager/Activities")
+        remote_object.StopActivity(
+            activityaddr,
+            dbus_interface="org.kde.ActivityManager.Activities")
 
+    @intent_handler(IntentBuilder("SwitchActivitiesIntent").require("ActivitiesSwitchKeyword").build())
     def handle_activities_switch_plasma_skill_intent(self, message):
+        """
+        Switch Activities
+        """
         utterance = message.data.get('utterance').lower()
         utterance = utterance.replace(
             message.data.get('ActivitiesSwitchKeyword'), '')
         searchString = utterance.lower()
-        speakword = searchString.replace(" ", "")
+        speakword = searchString.lstrip(' ')
         actinfo = []
         bus = dbus.SessionBus()
         remote_object = bus.get_object(
@@ -116,7 +166,7 @@ class ActivitiesPlasmaDesktopSkill(MycroftSkill):
             "activities.switch",
             data={'SwitchActivityName': speakword})
         for i in range(len(callback)):
-            temp_callback = map(str, callback[i])
+            temp_callback = list(map(str, callback[i]))
             actinfo.append(temp_callback)
             actenum = actinfo[i][1]
             actgetid = actenum.lower()
@@ -125,6 +175,9 @@ class ActivitiesPlasmaDesktopSkill(MycroftSkill):
                 self.switchtoactivity(actid)
 
     def switchtoactivity(self, activitieslist):
+        """
+        Switch Activities SubFunc
+        """
         activityaddr = activitieslist
         bus = dbus.SessionBus()
         remote_object = bus.get_object(
@@ -135,11 +188,14 @@ class ActivitiesPlasmaDesktopSkill(MycroftSkill):
             dbus_interface="org.kde.ActivityManager.Activities")
 
     def stop(self):
+        """
+        Mycroft Stop Function
+        """
         pass
-
-# The "create_skill()" method is used to create an instance of the skill.
-# Note that it's outside the class itself.
 
 
 def create_skill():
+    """
+    Mycroft Create Skill Function
+    """
     return ActivitiesPlasmaDesktopSkill()
