@@ -1,5 +1,7 @@
-# mycroft-activities-plasma-skill
+## Plasma-Activites-Skill
 This skill integrates Plasma 5 Activities with Mycroft which enables users to create activities and display activities on the Desktop.
+
+## Description 
 
 #### Installation of skill:
 * Download or Clone Git
@@ -21,25 +23,22 @@ This skill integrates Plasma 5 Activities with Mycroft which enables users to cr
 * For other distributions:
 - Python Dbus package is required and copying the Python Dbus folder and lib from your system python install over to /home/$USER/.virtualenvs/mycroft/lib/python2.7/site-packages/.
 
-##### How To Use: 
+## Examples
 ###### Create Activities
-- "Hey Mycroft, create a new activity 'Activity Name'"
-- "Hey Mycroft, create activity 'Activity Name' "
+- "Hey Mycroft, create new activity 'Activity Name'"
 
 ###### Display Activities
 - "Hey Mycroft, show current activities "
 - "Hey Mycroft, display activities "
 
-## Current state
+###### Stop Activities
+- "Hey Mycroft, stop activity 'Activity Name' "
 
-Working features:
-* Create Activities
-* Show Activities
+###### Remove Activities
+- "Hey Mycroft, remove activity 'Activity Name' "
 
-Known issues:
-* None
+###### Switch Activity
+- "Hey Mycroft, switch to activity 'Activity Name' "
 
-TODO:
-* Stop Activity
-* Remove Activity
-* Switch Activity
+## Credits 
+Aix [Github: https://github.com/AIIX]
