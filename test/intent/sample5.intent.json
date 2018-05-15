@@ -1,7 +1,7 @@
 {
-  "utterance": "switch current",
+  "utterance": "switch to activity",
   "intent_type": "SwitchActivitiesIntent",
   "intent": {
-    "ActivitiesSwitchKeyword": "activity"
+    "ActivitiesSwitchKeyword": ""
   }
 }
