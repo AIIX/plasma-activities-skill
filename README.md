@@ -21,7 +21,7 @@ This skill integrates Plasma 5 Activities with Mycroft which enables users to cr
 - "Hey Mycroft, display activities "
 
 ###### Stop Activities
-- "Hey Mycroft, stop activity 'Activity Name' "
+- "Hey Mycroft, kill activity 'Activity Name' "
 
 ###### Remove Activities
 - "Hey Mycroft, remove activity 'Activity Name' "
