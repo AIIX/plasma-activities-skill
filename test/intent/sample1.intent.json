@@ -2,6 +2,6 @@
   "utterance": "create a new activity",
   "intent_type": "ActivitiesKeywordIntent",
   "intent": {
-    "ActivitiesCreateKeyword": ""
+    "ActivitiesCreateKeyword": "create new activity"
   }
 }
