@@ -2,6 +2,6 @@
   "utterance": "remove activity",
   "intent_type": "RemoveActivitiesIntent",
   "intent": {
-    "ActivitiesRemoveKeyword": ""
+    "ActivitiesRemoveKeyword": "remove activity"
   }
 }
