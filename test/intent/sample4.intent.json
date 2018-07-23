@@ -2,6 +2,6 @@
   "utterance": "kill activity",
   "intent_type": "StopActivitiesIntent",
   "intent": {
-    "ActivitiesStopKeyword": ""
+    "ActivitiesStopKeyword": "kill activity"
   }
 }
